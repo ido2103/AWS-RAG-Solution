@@ -154,4 +154,4 @@ def handler(event, context: LambdaContext):
     except Exception as e:
         # Do not return an unknown exception to the end user.
         logger.exception(e)
-        raise RuntimeError("Something went wrong")
+        raise RuntimeError("Something went wrong", e)
