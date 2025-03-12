@@ -18,7 +18,8 @@ aws configure
   ```
 - יש להתנתק מ-ECR ואז להתחבר מחדש:
   ```bash
-  aws ecr logout
+  docker logout <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+
   aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
   ```
 
@@ -115,7 +116,7 @@ $env:BUILDKIT_STEP_LOG_MAX_SIZE = "0"
 
 התקנה של 20+ דקות היא תקינה, אך אם יש שגיאה כגון could not connect to ECR:
 ```bash
-aws ecr logout
+docker logout <your-region>.amazonaws.com
 aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
 ```
 
@@ -125,6 +126,9 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 - יש לבדוק אם קיימת הרשאה לשימוש ב-Cohere וב-Titan ב-Bedrock
 - כדי למצוא את מקור התקלה, יש לבדוק את CloudWatch Log Group עם השם GraphQL
 
+
+### 6. שגיאה: Error response from daemon: login attempt to https://XXXXXXX.dkr.ecr.REGION.amazonaws.com/v2/ failed with status: 400 Bad Request
+- יש להתחיל טרמינל חדש (CMD) ולהריץ את הפקודה שוב. אם לא עובד לנסות מספק דקות ולנסות שוב.
 ## סיכום
 
 - המדריך מפרט את תהליך ההתקנה שלב אחר שלב

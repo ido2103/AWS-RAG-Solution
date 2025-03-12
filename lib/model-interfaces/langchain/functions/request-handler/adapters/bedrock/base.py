@@ -80,6 +80,7 @@ class BedrockChatAdapter(ModelAdapter):
                 "xls",
                 "xlsx",
                 "html",
+                "htm",
                 "txt",
                 "md",
             ]

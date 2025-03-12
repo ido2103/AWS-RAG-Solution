@@ -38,6 +38,7 @@ const fileExtensions = new Set([
   ".xlsx",
   ".eml",
   ".html",
+  ".htm",
   ".json",
   ".md",
   ".msg",
