@@ -20,7 +20,7 @@ aws configure
   ```bash
   docker logout <aws_account_id>.dkr.ecr.<region>.amazonaws.com
 
-  aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
+  aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin https://<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com 
   ```
 
 ## 2. התקנת המערכת
