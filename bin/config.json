@@ -1,5 +1,5 @@
 {
-  "prefix": "RAG-Cohere",
+  "prefix": "RAG",
   "enableS3TransferAcceleration": false,
   "enableWaf": false,
   "directSend": true,

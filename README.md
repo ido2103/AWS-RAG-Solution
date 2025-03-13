@@ -10,18 +10,19 @@
 aws configure
 ```
 
+
 ### הכנת הסביבה
 - יש לוודא ש-Docker Desktop פועל
 - יש לוודא שה-CDK מעודכן:
   ```bash
   npm install -g aws-cdk
   ```
-- יש להתנתק מ-ECR ואז להתחבר מחדש:
+יש להתחבר ל ECR:
   ```bash
-  docker logout <aws_account_id>.dkr.ecr.<region>.amazonaws.com
-
   aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin https://<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com 
   ```
+- אם יש תקלה שקשורה ל STS:
+- יש לערוך את קובץ ההגדרות של אמזון ולמחוק את השורה השורה של SSO
 
 ## 2. התקנת המערכת
 
@@ -29,12 +30,11 @@ aws configure
 git clone https://github.com/ido2103/AWS-RAG-Solution
 cd AWS-RAG-Solution
 npm ci && npm run build
-npm run cdk bootstrap  # שלב חובה לפני הפריסה
-npm run deploy
 ```
 
 ### קובץ קונפיגורציה (config.json)
-
+- הקונפיגורציה מחליטה איזה רכיבים יפרסו, באיזה איזור. 
+- הקונפיגורציה ברירת המחדל פורסת את הפיתרון עם בדרוק באירלנד עם השם RAG.
 אם אין צורך לשנות את הקונפיגורציה:
 ```bash
 cp bin/config.json dist/bin/config.json
@@ -45,8 +45,48 @@ cp bin/config.json dist/bin/config.json
 npm run configure
 cp dist/bin/config.json bin/config.json
 ```
+לאחר שהקונפיגורציה מוכנה, יש לסיים את התקנת המערכת:
+```bash
+npm run cdk bootstrap  # שלב חובה לפני הפריסה, אין צורך לעשות אותו כל פעם - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
+```
+ללכת לתיקייה
+```bash
+lib/user-interface/react-app/src
+```
+ליצור קובץ בשם
+```bash
+vite-env.d.ts
+קוד:
+/// <reference types="vite/client" />
+```
 
-## 3. הגדרת ה-Workspace
+##
+הפעלת המודלים
+- לאחר הכנת הסביבה, יש להתחבר לבדרוק ולהפעיל גישה למודלים:
+```bash
+Gen AI Models:
+Claude
+Embedding Models:
+Titan Text Embeddings V2
+Embed Multilingual
+```
+
+## 3. הגדרת המשתמשים לסביבה
+לאחר פריסת המערכת, יופיעו בקונסול הלינקים הבאים:
+```bash
+Outputs:
+RAGGenAIChatBotStack.AuthenticationUserPoolIdF0D106F7 = UserPoolID
+RAGGenAIChatBotStack.AuthenticationUserPoolLink55CE7EC4 = UserPoolLink
+RAGGenAIChatBotStack.AuthenticationUserPoolWebClientId80D5526A = WebClientID
+RAGGenAIChatBotStack.ChatBotApiGraphqlAPIURL702C0AD7 = GraphQLURL
+RAGGenAIChatBotStack.ChatBotApiGraphqlapiIdF7B33EFE = GraphQLID
+RAGGenAIChatBotStack.SharedApiKeysSecretName3D265ECA = SharedApiKeysSecret
+RAGGenAIChatBotStack.UserInterfacePublicWebsiteUserInterfaceDomainName0AFFF237 = InterfaceURL
+```
+- יש ללחוץ על הלינק של הקוגניטו יוזר פול, וליצור לכם משתמש ולשייך אותו לקבוצת אדמין.
+- לאחר מכן, יש להתחבר איתו דרך הלינק לממשק.
+
+## 4. הגדרת ה-Workspace
 
 לאחר שהמערכת מותקנת, יש ליצור Workspace עם ההגדרות הבאות:
 
@@ -58,24 +98,35 @@ cp dist/bin/config.json bin/config.json
 
 > **הערה**: אם יש שגיאה בהפעלת ה-Workspace, יש לוודא שקיבלת הרשאה למודלים ב-Bedrock ולבדוק את ה-logs בקבוצת graphql.
 
-## 4. יצירת יישום ושיוך ל-User Group
+# לאחר יצירת הוורקספייס יש להעלות את הקבצים
+- יש להיכנס לוורקספייס ולהעלות אחד מהקבצים הנתמכים.
+- לאחר ההעלאה יש לחכות שהקובץ יהיה בסטטוטס Processed.
+- חשוב לציין שלא קיים עדכון אוטומטי, לכן יש לרפרש כל כמה דקות.
+
+## 5. יצירת יישום ושיוך ל-User Group
 
 לאחר שה-Workspace פועל:
 
-1. יש להיכנס ל-Admin Panel ולבחור Applications (נמצא בתפריט הצדדי)
+1. יש להיכנס בתפריט הצדדי תחת "אדמין" ל"יישומים"
 2. יש ליצור Application ולשייך אותו ל-User Group
-3. לאחר יצירת היישום, יש ללחוץ על שמו (הוא יהפוך לכחול), ואז להיכנס דרך הקישור הבא:
+3. ממולץ לשנות את ערך הטמפרטורה ל0.2.
+4. לאחר יצירת היישום, יש ללחוץ על שמו (הוא יהפוך לכחול), ואז להיכנס דרך הקישור הבא:
    ```
    https://XXXXXXX.cloudfront.net/application/YYYYYYY
    ```
    - XXXXX = CloudFront Distribution
    - YYYYY = Application ID
 
-## 5. בדיקות איכות (Sanity Check)
+   יש לשמור את Application ID לשימוש בסעיף הבא
+
+5. לאחר מכן, המשתמשים שהגדרתם ביישום יוכלו להתחבר לאפליקציה דרך הלינק
+https://XXXXXXX.cloudfront.net/chat/application/YYYYYYY
+
+## 6. בדיקות איכות (Sanity Check)
 
 - תשאול המודל ללא Workspace
 - הפעלת Workspace ובדיקת תוצאות
-- השוואת ביצועים בין Chunk Size 250/300, Cross Encoder On/Off
+- השוואת ביצועים בין Chunk Size 250/300, Chunk Overlap, etc.
 - בדיקת איכות המודלים Cohere לעומת Titan
 
 ## פתרון תקלות
@@ -128,7 +179,7 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 
 
 ### 6. שגיאה: Error response from daemon: login attempt to https://XXXXXXX.dkr.ecr.REGION.amazonaws.com/v2/ failed with status: 400 Bad Request
-- יש להתחיל טרמינל חדש (CMD) ולהריץ את הפקודה שוב. אם לא עובד לנסות מספק דקות ולנסות שוב.
+- יש להתחיל טרמינל חדש ולהריץ את הפקודה שוב. אם לא עובד לנסות מספק דקות ולנסות שוב.
 ## סיכום
 
 - המדריך מפרט את תהליך ההתקנה שלב אחר שלב
