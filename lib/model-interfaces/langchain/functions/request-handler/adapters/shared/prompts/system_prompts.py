@@ -90,9 +90,9 @@ prompts = {
     "he": {
         # Prompt for answering questions using provided context (Hebrew)
         "qa_prompt": (
-            "השתמש בקטעי ההקשר הבאים כדי לענות על השאלה בסוף. "
+            "השתמש בקטעי ההקשר הבאים כדי לענות על השאלה בסוף. יש לציין את הסעיף והתת סעיף שממנו לקוחה התשובה."
             "אם אינך יודע את התשובה, פשוט אמור שאינך יודע, אל תנסה "
-            "להמציא תשובה."
+            "להמציא תשובה. "
         ),
         # Prompt for conversational interaction between a human and AI (Hebrew)
         "conversation_prompt": (
