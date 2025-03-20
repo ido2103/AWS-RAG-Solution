@@ -10,6 +10,7 @@ from typing import List, Optional
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 PROCESSING_BUCKET_NAME = os.environ.get("PROCESSING_BUCKET_NAME", "")
+FILE_SIZE_THRESHOLD = 100 * 1024  # 100KB threshold for file-level chunking
 s3 = boto3.resource("s3")
 
 
@@ -85,10 +86,20 @@ def add_chunks(
     )
 
 
-def split_content(workspace: dict, content: str):
+def split_content(workspace: dict, content: str, file_size: Optional[int] = None):
     chunking_strategy = workspace["chunking_strategy"]
     chunk_size = workspace["chunk_size"]
     chunk_overlap = workspace["chunk_overlap"]
+    engine = workspace["engine"]
+
+    # For OpenSearch, check if we should use file-level chunking
+    if engine == "opensearch" and chunking_strategy == "file_level":
+        if file_size is None or file_size <= FILE_SIZE_THRESHOLD:
+            # Use file-level chunking for small files
+            return [content]
+        else:
+            # Fall back to recursive chunking for large files
+            chunking_strategy = "recursive"
 
     if chunking_strategy == "recursive":
         text_splitter = RecursiveCharacterTextSplitter(

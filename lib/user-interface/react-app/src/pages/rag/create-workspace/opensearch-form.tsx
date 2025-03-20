@@ -22,7 +22,7 @@ export interface OpenSearchFormProps {
   submitting: boolean;
 }
 
-export function OpenSearchForm(props: OpenSearchFormProps) {
+export default function OpenSearchForm(props: OpenSearchFormProps) {
   return (
     <Container
       header={<Header variant="h2">OpenSearch Workspace Configuration</Header>}
@@ -40,6 +40,7 @@ export function OpenSearchForm(props: OpenSearchFormProps) {
         <FormField label="Workspace Name" errorText={props.errors.name}>
           <Input
             placeholder="My Workspace"
+            data-locator="name"
             disabled={props.submitting}
             value={props.data.name}
             onChange={({ detail: { value } }) =>
@@ -48,10 +49,10 @@ export function OpenSearchForm(props: OpenSearchFormProps) {
           />
         </FormField>
         <EmbeddingSelector
+          errors={props.errors}
           submitting={props.submitting}
           selectedModel={props.data.embeddingsModel}
           onChange={props.onChange}
-          errors={props.errors}
         />
         <LanguageSelectorField
           errors={props.errors}

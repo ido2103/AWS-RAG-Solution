@@ -76,6 +76,7 @@ export interface AuroraWorkspaceCreateInput {
   metric: string;
   index: boolean;
   hybridSearch: boolean;
+  chunkingStrategy: "recursive" | "file_level";
   chunkSize: number;
   chunkOverlap: number;
 }
@@ -83,9 +84,10 @@ export interface AuroraWorkspaceCreateInput {
 export interface OpenSearchWorkspaceCreateInput {
   name: string;
   embeddingsModel: SelectProps.Option | null;
-  languages: readonly SelectProps.Option[];
   crossEncoderModel: SelectProps.Option | null;
+  languages: readonly SelectProps.Option[];
   hybridSearch: boolean;
+  chunkingStrategy: "recursive" | "file_level";
   chunkSize: number;
   chunkOverlap: number;
 }

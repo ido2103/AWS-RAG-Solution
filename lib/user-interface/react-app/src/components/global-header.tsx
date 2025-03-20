@@ -65,13 +65,6 @@ export default function GlobalHeader() {
             onClick: onChangeThemeClick,
           },
           {
-            type: "button",
-            text: "GitHub",
-            href: "https://github.com/aws-samples/aws-genai-llm-chatbot",
-            external: true,
-            externalIconAriaLabel: " (opens in a new tab)",
-          },
-          {
             type: "menu-dropdown",
             description: userName ?? "",
             iconName: "user-profile",

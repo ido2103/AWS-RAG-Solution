@@ -9,7 +9,7 @@ import { AppContext } from "../../../common/app-context";
 import { OptionsHelper } from "../../../common/helpers/options-helper";
 import { ApiClient } from "../../../common/api-client/api-client";
 import RouterButton from "../../../components/wrappers/router-button";
-import { OpenSearchForm } from "./opensearch-form";
+import OpenSearchForm from "./opensearch-form";
 
 const nameRegex = /^[\w+_-]+$/;
 const defaults: OpenSearchWorkspaceCreateInput = {
@@ -18,6 +18,7 @@ const defaults: OpenSearchWorkspaceCreateInput = {
   crossEncoderModel: null,
   languages: [{ value: "english", label: "English" }],
   hybridSearch: false,
+  chunkingStrategy: "recursive",
   chunkSize: 1000,
   chunkOverlap: 200,
 };
@@ -76,16 +77,18 @@ export default function CreateWorkspaceOpenSearch() {
         errors.languages = "You can select up to 3 languages";
       }
 
-      if (form.chunkSize < 100) {
-        errors.chunkSize = "Chunk size must be at least 100 characters";
-      } else if (form.chunkSize > 10000) {
-        errors.chunkSize = "Chunk size must be less than 10000 characters";
-      }
+      if (form.chunkingStrategy === "recursive") {
+        if (form.chunkSize < 100) {
+          errors.chunkSize = "Chunk size must be at least 100 characters";
+        } else if (form.chunkSize > 10000) {
+          errors.chunkSize = "Chunk size must be less than 10000 characters";
+        }
 
-      if (form.chunkOverlap < 0) {
-        errors.chunkOverlap = "Chunk overlap must be zero or greater";
-      } else if (form.chunkOverlap >= form.chunkSize) {
-        errors.chunkOverlap = "Chunk overlap must be less than chunk size";
+        if (form.chunkOverlap < 0) {
+          errors.chunkOverlap = "Chunk overlap must be zero or greater";
+        } else if (form.chunkOverlap >= form.chunkSize) {
+          errors.chunkOverlap = "Chunk overlap must be less than chunk size";
+        }
       }
 
       return errors;
@@ -115,7 +118,7 @@ export default function CreateWorkspaceOpenSearch() {
 
     const apiClient = new ApiClient(appContext);
     try {
-      await apiClient.workspaces.createOpenSearchWorkspace({
+      const result = await apiClient.workspaces.createOpenSearchWorkspace({
         name: data.name.trim(),
         embeddingsModelProvider: embeddingsModel.provider,
         embeddingsModelName: embeddingsModel.name,
@@ -123,15 +126,18 @@ export default function CreateWorkspaceOpenSearch() {
         crossEncoderModelName: crossEncoderModel?.name,
         languages: data.languages.map((x) => x.value ?? ""),
         hybridSearch: data.hybridSearch && crossEncoderSelected,
-        chunkingStrategy: "recursive",
+        chunkingStrategy: data.chunkingStrategy,
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap,
       });
 
-      navigate("/rag/workspaces");
+      navigate(`/rag/workspaces/${result.data?.createOpenSearchWorkspace.id}`);
       return;
-    } catch (e) {
+    } catch (e: any) {
       setSubmitting(false);
+      console.error(
+        `Invocation error: ${e.errors.map((x: any) => x.message).join("")}`
+      );
       setGlobalError("Something went wrong");
     }
   };
