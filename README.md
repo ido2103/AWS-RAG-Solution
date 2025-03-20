@@ -129,13 +129,28 @@ https://XXXXXXX.cloudfront.net/chat/application/YYYYYYY
 - השוואת ביצועים בין Chunk Size 250/300, Chunk Overlap, etc.
 - בדיקת איכות המודלים Cohere לעומת Titan
 
-## פתרון תקלות
+
+# קונפיגורציות
+## שינוי מספר התצאות שהמודל מקבל
+```bash
+lib/shared/layers/python-sdk/python/genai_core/langchain/workspace_retriever.py
+
+    def _get_relevant_documents(
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+    ) -> List[Document]:
+        logger.debug("SearchRequest", query=query)
+        result = genai_core.semantic_search.semantic_search(
+            self.workspace_id, query, limit=20, full_response=False
+        )
+```
+- שינוי המספר בלימיט ישנה את כמות הקבצים שיבואו למודל קקונטקסט לשאלה.
+# פתרון תקלות
 
 ### 1. AWS לא מזהה את המשתמש
 
 שגיאת הרשאות בעת הפריסה או ההתחברות ל-ECR:
 ```bash
-aws ecr logout
+docker logout <your-region>.amazonaws.com
 aws configure
 aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
 ```
