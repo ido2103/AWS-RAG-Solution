@@ -25,15 +25,20 @@ prompts = {
     "en": {
         # Prompt for answering questions using provided context
         "qa_prompt": (
-            "Use the following pieces of context to answer the question at the end. "
-            "If you don't know the answer, just say that you don't know, don't try "
-            "to make up an answer."
+            "You are an AI assistant using Retrieval-Augmented Generation (RAG). "
+            "You MUST ONLY answer questions based on the information provided in the context. "
+            "DO NOT use any external knowledge or make assumptions. "
+            "If the answer is not in the provided context, respond with 'I cannot answer this question as it is not covered in the provided documents.' "
+            "DO NOT provide recipes, general knowledge, or any information not directly from the context. "
+            "Always cite the specific sections and subsections from which your answer is derived."
         ),
         # Prompt for conversational interaction between a human and AI
         "conversation_prompt": (
-            "The following is a friendly conversation between a human and an AI. "
-            "If the AI does not know the answer to a question, it truthfully says "
-            "it does not know."
+            "You are an AI assistant using Retrieval-Augmented Generation (RAG). "
+            "You MUST ONLY answer questions based on the information provided in the context. "
+            "DO NOT use any external knowledge or make assumptions. "
+            "If the answer is not in the provided context, respond with 'I cannot answer this question as it is not covered in the provided documents.' "
+            "DO NOT provide recipes, general knowledge, or any information not directly from the context."
         ),
         # Prompt for rephrasing a follow-up question to be a standalone question
         "condense_question_prompt": (
@@ -90,15 +95,20 @@ prompts = {
     "he": {
         # Prompt for answering questions using provided context (Hebrew)
         "qa_prompt": (
-            "השתמש בקטעי ההקשר הבאים כדי לענות על השאלה בסוף. יש לציין את הסעיף והתת סעיף שממנו לקוחה התשובה."
-            "אם אינך יודע את התשובה, פשוט אמור שאינך יודע, אל תנסה "
-            "להמציא תשובה. "
+            "אתה עוזר בינה מלאכותית המשתמש ב-Retrieval-Augmented Generation (RAG). "
+            "עליך לענות על שאלות אך ורק על סמך המידע המופיע בהקשר. "
+            "אל תשתמש בידע חיצוני ואל תעשה הנחות. "
+            "אם התשובה אינה מופיעה בהקשר, ענה 'איני יכול לענות על שאלה זו כיוון שהיא אינה מכוסה במסמכים שסופקו.' "
+            "אל תספק מתכונים, ידע כללי או מידע שאינו מגיע ישירות מההקשר. "
+            "תמיד ציין את שם הקובץ, הסעיפים והתת-סעיפים הספציפיים שמהם נלקחה התשובה."
         ),
         # Prompt for conversational interaction between a human and AI (Hebrew)
         "conversation_prompt": (
-            "להלן שיחה ידידותית בין אדם לבינה מלאכותית. "
-            "אם הבינה המלאכותית אינה יודעת את התשובה לשאלה, היא אומרת בכנות "
-            "שהיא אינה יודעת."
+            "אתה עוזר בינה מלאכותית המשתמש ב-Retrieval-Augmented Generation (RAG). "
+            "עליך לענות על שאלות אך ורק על סמך המידע המופיע בהקשר. "
+            "אל תשתמש בידע חיצוני ואל תעשה הנחות. "
+            "אם התשובה אינה מופיעה בהקשר, ענה 'איני יכול לענות על שאלה זו כיוון שהיא אינה מכוסה במסמכים שסופקו.' "
+            "אל תספק מתכונים, ידע כללי או מידע שאינו מגיע ישירות מההקשר."
         ),
         # Prompt for rephrasing a follow-up question to be a standalone question (Hebrew)
         "condense_question_prompt": (

@@ -54,9 +54,8 @@ export default function GlobalHeader() {
     >
       <TopNavigation
         identity={{
-          title: "צ׳אטבוט עברי",
+          title: "הר-גל",
           href: "/",
-          logo: { src: "/images/logo.png", alt: { CHATBOT_NAME } + " Logo" },
         }}
         utilities={[
           {
@@ -64,13 +63,7 @@ export default function GlobalHeader() {
             text: theme === Mode.Dark ? "מצב חשוך" : "מצב בהיר",
             onClick: onChangeThemeClick,
           },
-          {
-            type: "button",
-            text: "GitHub",
-            href: "https://github.com/aws-samples/aws-genai-llm-chatbot",
-            external: true,
-            externalIconAriaLabel: " (opens in a new tab)",
-          },
+
           {
             type: "menu-dropdown",
             description: userName ?? "",
