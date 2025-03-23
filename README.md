@@ -1,3 +1,32 @@
+<div dir="rtl" align="right">
+
+## תוכן עניינים
+
+- [מערכת RAG על AWS](#מערכת-rag-על-aws)
+  - [1. הכנת הסביבה](#1-הכנת-הסביבה)
+    - [התחברות ל-AWS](#התחברות-ל-aws)
+    - [הכנת הסביבה](#הכנת-הסביבה-1)
+  - [2. התקנת המערכת](#2-התקנת-המערכת)
+    - [קובץ קונפיגורציה (config.json)](#קובץ-קונפיגורציה-configjson)
+    - [הפעלת המודלים](#הפעלת-המודלים)
+  - [3. הגדרת המשתמשים לסביבה](#3-הגדרת-המשתמשים-לסביבה)
+  - [4. הגדרת ה-Workspace](#4-הגדרת-ה-workspace)
+  - [5. יצירת יישום ושיוך ל-User Group](#5-יצירת-יישום-ושיוך-ל-user-group)
+  - [6. בדיקות איכות (Sanity Check)](#6-בדיקות-איכות-sanity-check)
+  - [בראנצ'ים](#בראנצ'ים)
+  - [קונפיגורציות](#קונפיגורציות)
+  - [מודלי אמבדינג וריראנקינג](#מודלי-אמבדינג-וריראנקינג)
+- [פתרון תקלות](#פתרון-תקלות)
+  - [תקלות בפריסת המערכת (Deployment-Specific Problems)](#תקלות-בפריסת-המערכת-deployment-specific-problems)
+    - [AWS לא מזהה את המשתמש](#1-aws-לא-מזהה-את-המשתמש)
+    - [שגיאות במחיקת קבצים (permissions error)](#2-שגיאות-במחיקת-קבצים-permissions-error)
+    - [cdk deploy נכשל או לוקח זמן רב](#3-cdk-deploy-נכשל-או-לוקח-זמן-רב)
+    - [Error response from daemon: login attempt failed with status 400 Bad Request](#4-error-response-from-daemon-login-attempt-failed-with-status-400-bad-request)
+  - [תקלות באפליקציה (Application-Specific Problems)](#תקלות-באפליקציה-application-specific-problems)
+    - [בעיות עם Bedrock – קרתה תקלה ללא הסבר](#1-בעיות-עם-bedrock-–-קרתה-תקלה-ללא-הסבר)
+    - [שגיאה ביצירת Workspace או שימוש במודלים](#2-שגיאה-ביצירת-workspace-או-שימוש-במודלים)
+- [סיכום](#סיכום)
+
 # מערכת RAG על AWS  
 **גרסה מותאמת אישית עם דגשים מבוססי ניסיון בשטח ופתרון תקלות מפורט.**
 
@@ -129,6 +158,10 @@ https://XXXXXXX.cloudfront.net/chat/application/YYYYYYY
 - השוואת ביצועים בין Chunk Size 250/300, Chunk Overlap, etc.
 - בדיקת איכות המודלים Cohere לעומת Titan
 
+# בראנצ'ים:
+### rag-input-10-files:
+- הוספה של עוד גרסאת צ'אנקינג.
+- הוספה של 10 קבצים לקונטקסט המודל במקום 3.
 
 # קונפיגורציות
 ## שינוי מספר התצאות שהמודל מקבל
@@ -140,13 +173,27 @@ lib/shared/layers/python-sdk/python/genai_core/langchain/workspace_retriever.py
     ) -> List[Document]:
         logger.debug("SearchRequest", query=query)
         result = genai_core.semantic_search.semantic_search(
-            self.workspace_id, query, limit=20, full_response=False
+            self.workspace_id, query, limit=10, full_response=False
         )
 ```
 - שינוי המספר בלימיט ישנה את כמות הקבצים שיבואו למודל קקונטקסט לשאלה.
+# מודלי אמבדינג וריראנקינג:
+### הדרך הכי זולה שמצאתי היא לעבור לאחד מהאיזורים הבאים ולהגדיר ריראנקינג דרך בדרוק (סייג' מייקר מאוד יקר ולא בהכרח מביא תוצאות יותר טובות, היתרון היחיד והברור הוא נימבוס).
+```bash
+us-west-2
+ap-northeast-1
+ca-central-1
+eu-central-1
+```
+להפעלה נימבוסית, יש להפעיל מודלי סייג'מייקר
+```bash
+"deployDefaultSagemakerModels": false
+```
 # פתרון תקלות
 
-### 1. AWS לא מזהה את המשתמש
+## תקלות בפריסת המערכת (Deployment-Specific Problems)
+
+#### 1. AWS לא מזהה את המשתמש
 
 שגיאת הרשאות בעת הפריסה או ההתחברות ל-ECR:
 ```bash
@@ -155,19 +202,11 @@ aws configure
 aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
 ```
 
-### 2. Docker לא מצליח לדחוף קונטיינרים ל-ECR
-
-במקרה של שגיאת Bad Request בעת docker push:
-```powershell
-$env:DOCKER_BUILDKIT = "1"
-$env:BUILDKIT_STEP_LOG_MAX_SIZE = "0"
-```
-
-### 3. שגיאות במחיקת קבצים (permissions error)
+#### 2. שגיאות במחיקת קבצים (permissions error)
 
 במקרה של שגיאת הרשאות עם node_modules:
 
-1. לכבות את OneDrive – אחרת הבעיה תחזור שוב
+1. לכבות את OneDrive
 2. למחוק את תיקיות node_modules:
    ```bash
    rm -rf node_modules
@@ -178,7 +217,7 @@ $env:BUILDKIT_STEP_LOG_MAX_SIZE = "0"
    npm ci && npm run build
    ```
 
-### 4. cdk deploy נכשל או לוקח זמן רב
+#### 3. cdk deploy נכשל או לוקח זמן רב
 
 התקנה של 20+ דקות היא תקינה, אך אם יש שגיאה כגון could not connect to ECR:
 ```bash
@@ -186,15 +225,25 @@ docker logout <your-region>.amazonaws.com
 aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
 ```
 
-### 5. בעיות עם Bedrock – קרתה תקלה ללא הסבר
+#### 4. Error response from daemon: login attempt failed with status 400 Bad Request
 
-- המערכת לא תציג שגיאה ברורה במקרה של חוסר הרשאה למודלים
-- יש לבדוק אם קיימת הרשאה לשימוש ב-Cohere וב-Titan ב-Bedrock
-- כדי למצוא את מקור התקלה, יש לבדוק את CloudWatch Log Group עם השם GraphQL
+- יש להתחיל טרמינל חדש ולהריץ את הפקודה שוב.
+- אם לא עובד, להמתין מספר דקות ולנסות שוב.
+
+## תקלות באפליקציה (Application-Specific Problems)
+
+#### 1. בעיות עם Bedrock – קרתה תקלה ללא הסבר
+
+- המערכת לא תציג שגיאה ברורה במקרה של חוסר הרשאה למודלים.
+- יש לבדוק אם קיימת הרשאה לשימוש ב-Cohere וב-Titan ב-Bedrock.
+- כדי למצוא את מקור התקלה, יש לבדוק את CloudWatch Log Group עם השם GraphQL.
+
+#### 2. שגיאה ביצירת Workspace או שימוש במודלים
+
+- אם קיימת שגיאה בהפעלת ה-Workspace או המודלים, ודא שקיבלת הרשאות מתאימות למודלים ב-Bedrock.
+- מומלץ לבדוק את ה-Logs ב-CloudWatch תחת ה-Log Group של GraphQL.
 
 
-### 6. שגיאה: Error response from daemon: login attempt to https://XXXXXXX.dkr.ecr.REGION.amazonaws.com/v2/ failed with status: 400 Bad Request
-- יש להתחיל טרמינל חדש ולהריץ את הפקודה שוב. אם לא עובד לנסות מספק דקות ולנסות שוב.
 ## סיכום
 
 - המדריך מפרט את תהליך ההתקנה שלב אחר שלב
@@ -204,3 +253,4 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 ---
 
 ### 
+</div>
