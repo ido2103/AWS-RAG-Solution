@@ -244,6 +244,13 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 - מומלץ לבדוק את ה-Logs ב-CloudWatch תחת ה-Log Group של GraphQL.
 
 
+#### 3. המסמכים שהועלו תקועים במצב Processing
+
+- אם לוקח יותר מ10-15 דקות לעבד את הקבצים (לא רק את חלקם, הכוונה היא שאף קובץ לא מעובד), ממליץ להסתכל בקבוצת הלוגים
+```bash
+FileImportStateMachine
+```
+
 ## סיכום
 
 - המדריך מפרט את תהליך ההתקנה שלב אחר שלב
