@@ -118,7 +118,9 @@ def query_workspace_aurora(
         items.extend(vector_search_records)
 
         if hybrid_search:
-            language = sql.Identifier(language_name)
+            # Map 'hebrew' to 'simple' for full-text search functions
+            db_language_name = 'simple' if language_name == 'hebrew' else language_name
+            language = sql.Identifier(db_language_name)
 
             cursor.execute(
                 sql.SQL(

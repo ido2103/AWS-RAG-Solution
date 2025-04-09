@@ -21,4 +21,4 @@ class UserRole(Enum):
 SAFE_SHORT_STR_VALIDATION_OPTIONAL = Field(
     min_length=1, max_length=100, pattern=SAFE_STR_REGEX, default=None
 )
-SAFE_FILE_NAME_REGEX = r"^[\\u0590-\\u05FF\\uFB1D-\\uFB4FA-Za-z0-9-_./\\\\ ]*$"
+SAFE_FILE_NAME_REGEX = r"^[\u0590-\u05FF\uFB1D-\uFB4FA-Za-z0-9\-_. /\\\\]*$"

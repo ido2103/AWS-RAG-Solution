@@ -1,134 +1,269 @@
-# Chatbot with Hebrew Support Branch
+<div dir="rtl" align="right">
 
-This branch contains targeted modifications to the original project, demonstrating how small changes can significantly customize the chatbot experience.
+## תוכן עניינים
 
-![sample](docs/about/assets/chatbot-demo-hebrew.gif "AWS GenAI Chatbot")
+- [מערכת RAG על AWS](#מערכת-rag-על-aws)
+  - [1. הכנת הסביבה](#1-הכנת-הסביבה)
+    - [התחברות ל-AWS](#התחברות-ל-aws)
+    - [הכנת הסביבה](#הכנת-הסביבה-1)
+  - [2. התקנת המערכת](#2-התקנת-המערכת)
+    - [קובץ קונפיגורציה (config.json)](#קובץ-קונפיגורציה-configjson)
+    - [הפעלת המודלים](#הפעלת-המודלים)
+  - [3. הגדרת המשתמשים לסביבה](#3-הגדרת-המשתמשים-לסביבה)
+  - [4. הגדרת ה-Workspace](#4-הגדרת-ה-workspace)
+  - [5. יצירת יישום ושיוך ל-User Group](#5-יצירת-יישום-ושיוך-ל-user-group)
+  - [6. בדיקות איכות (Sanity Check)](#6-בדיקות-איכות-sanity-check)
+  - [בראנצ'ים](#בראנצ'ים)
+  - [קונפיגורציות](#קונפיגורציות)
+  - [מודלי אמבדינג וריראנקינג](#מודלי-אמבדינג-וריראנקינג)
+- [פתרון תקלות](#פתרון-תקלות)
+  - [תקלות בפריסת המערכת (Deployment-Specific Problems)](#תקלות-בפריסת-המערכת-deployment-specific-problems)
+    - [AWS לא מזהה את המשתמש](#1-aws-לא-מזהה-את-המשתמש)
+    - [שגיאות במחיקת קבצים (permissions error)](#2-שגיאות-במחיקת-קבצים-permissions-error)
+    - [cdk deploy נכשל או לוקח זמן רב](#3-cdk-deploy-נכשל-או-לוקח-זמן-רב)
+    - [Error response from daemon: login attempt failed with status 400 Bad Request](#4-error-response-from-daemon-login-attempt-failed-with-status-400-bad-request)
+  - [תקלות באפליקציה (Application-Specific Problems)](#תקלות-באפליקציה-application-specific-problems)
+    - [בעיות עם Bedrock – קרתה תקלה ללא הסבר](#1-בעיות-עם-bedrock-–-קרתה-תקלה-ללא-הסבר)
+    - [שגיאה ביצירת Workspace או שימוש במודלים](#2-שגיאה-ביצירת-workspace-או-שימוש-במודלים)
+- [סיכום](#סיכום)
 
-### Key Changes
+# מערכת RAG על AWS  
+**גרסה מותאמת אישית עם דגשים מבוססי ניסיון בשטח ופתרון תקלות מפורט.**
 
-1. **RTL Language Support**
+## 1. הכנת הסביבה  
 
-   - Added right-to-left (RTL) text direction support
-   - Adjusted UI components for RTL display
-   - Enables compatibility with Hebrew and other RTL languages
+לפני תחילת ההתקנה, יש לוודא שהמערכת מוכנה לפעולה:
 
-2. **Theme Customization**
+### התחברות ל-AWS
+```bash
+aws configure
+```
 
-   - Applied Cloudscape design system theming options
-   - Adjusted color schemes and component styles
 
-3. **Extended Regional Deployment**
+### הכנת הסביבה
+- יש לוודא ש-Docker Desktop פועל
+- יש לוודא שה-CDK מעודכן:
+  ```bash
+  npm install -g aws-cdk
+  ```
+יש להתחבר ל ECR:
+  ```bash
+  aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin https://<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com 
+  ```
+- אם יש תקלה שקשורה ל STS:
+- יש לערוך את קובץ ההגדרות של אמזון ולמחוק את השורה השורה של SSO
 
-   - Included support for additional AWS regions, such as il-central-1
+## 2. התקנת המערכת
 
-4. **Document Chat Functionality**
-   - Implemented feature to upload documents
-   - Use of Amazon Bedrock Converse API, native document support functionality
-   - Enhances chatbot's utility for document analysis
+```bash
+git clone https://github.com/ido2103/AWS-RAG-Solution
+cd AWS-RAG-Solution
+npm ci && npm run build
+```
 
-### Value of Customizations
+### קובץ קונפיגורציה (config.json)
+- הקונפיגורציה מחליטה איזה רכיבים יפרסו, באיזה איזור. 
+- הקונפיגורציה ברירת המחדל פורסת את הפיתרון עם בדרוק באירלנד עם השם RAG.
+אם אין צורך לשנות את הקונפיגורציה:
+```bash
+cp bin/config.json dist/bin/config.json
+```
 
-These modifications showcase the adaptability of the original AWS sample project:
+אם יש צורך בשינוי קונפיגורציה:
+```bash
+npm run configure
+cp dist/bin/config.json bin/config.json
+```
+לאחר שהקונפיגורציה מוכנה, יש לסיים את התקנת המערכת:
+```bash
+npm run cdk bootstrap  # שלב חובה לפני הפריסה, אין צורך לעשות אותו כל פעם - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
+```
+ללכת לתיקייה
+```bash
+lib/user-interface/react-app/src
+```
+ליצור קובץ בשם
+```bash
+vite-env.d.ts
+קוד:
+/// <reference types="vite/client" />
+```
 
-1. **Localization**:
-   RTL support opens up the chatbot to markets using Hebrew and other RTL languages, demonstrating how simple changes can make a product more accessible.
+## תחילת התקנת הסביבה
+### לאחר שכל ההגדרות מוכנות יש להריץ את הפקודה הבאה על מנת להתחיל בפריסת הפיתרון:
+```bash
+npm run cdk deploy
+```
 
-2. **Brand Alignment**:
-   Integrating Cloudscape design elements shows how organizations can easily align the chatbot's look and feel with their brand or preferred design system.
+##
+הפעלת המודלים
+- לאחר הכנת הסביבה, יש להתחבר לבדרוק לריג'ון שבוא הפעלתם את בדרוק (ברירת המחדל eu-central-1) ולהפעיל גישה למודלים:
+```bash
+Gen AI Models:
+Claude
+Embedding Models:
+Titan Text Embeddings V2
+Embed Multilingual
+```
 
-3. **Regional Flexibility**:
-   Adding deployment options for more regions illustrates how organizations can adapt the chatbot to meet local data residency requirements or improve regional performance.
+## 3. הגדרת המשתמשים לסביבה
+לאחר פריסת המערכת, יופיעו בקונסול הלינקים הבאים:
+```bash
+Outputs:
+RAGGenAIChatBotStack.AuthenticationUserPoolIdF0D106F7 = UserPoolID
+RAGGenAIChatBotStack.AuthenticationUserPoolLink55CE7EC4 = UserPoolLink
+RAGGenAIChatBotStack.AuthenticationUserPoolWebClientId80D5526A = WebClientID
+RAGGenAIChatBotStack.ChatBotApiGraphqlAPIURL702C0AD7 = GraphQLURL
+RAGGenAIChatBotStack.ChatBotApiGraphqlapiIdF7B33EFE = GraphQLID
+RAGGenAIChatBotStack.SharedApiKeysSecretName3D265ECA = SharedApiKeysSecret
+RAGGenAIChatBotStack.UserInterfacePublicWebsiteUserInterfaceDomainName0AFFF237 = InterfaceURL
+```
+- יש ללחוץ על הלינק של הקוגניטו יוזר פול, וליצור לכם משתמש ולשייך אותו לקבוצת אדמין.
+- לאחר מכן, יש להתחבר איתו דרך הלינק לממשק.
 
-4. **Customization Potential**:
-   These changes serve as practical examples for organizations looking to tailor the chatbot to their specific needs, showing that impactful customization doesn't always require extensive code changes.
+## 4. הגדרת ה-Workspace
 
-5. **Learning Opportunity**:
-   The modification process provides practical insights into adapting Cloudscape components and CDK constructs. This is valuable for developers and organizations looking to customize AWS-based applications and infrastructure.
+לאחר שהמערכת מותקנת, יש ליצור Workspace עם ההגדרות הבאות:
 
-While these modifications don't fundamentally alter the core functionality, they demonstrate how targeted changes can significantly enhance the chatbot expirience
+- Embedding Model: Cohere/Titan
+- Data Languages: Hebrew
+- Cross Encoder: None
+- Chunk Size: 300
+- Chunk Overlap: 100
 
-# Deploying a Multi-Model and Multi-RAG Powered Chatbot Using AWS CDK on AWS with Hebrew Support
+> **הערה**: אם יש שגיאה בהפעלת ה-Workspace, יש לוודא שקיבלת הרשאה למודלים ב-Bedrock ולבדוק את ה-logs בקבוצת graphql.
 
-# Building RAG use cases with GenAI Chatbot on AWS
+# לאחר יצירת הוורקספייס יש להעלות את הקבצים
+- יש להיכנס לוורקספייס ולהעלות אחד מהקבצים הנתמכים.
+- לאחר ההעלאה יש לחכות שהקובץ יהיה בסטטוטס Processed.
+- חשוב לציין שלא קיים עדכון אוטומטי, לכן יש לרפרש כל כמה דקות.
 
-[![Release Notes](https://img.shields.io/github/v/release/aws-samples/aws-genai-llm-chatbot)](https://github.com/aws-samples/aws-genai-llm-chatbot/releases)
-[![GitHub star chart](https://img.shields.io/github/stars/aws-samples/aws-genai-llm-chatbot?style=social)](https://star-history.com/#aws-samples/aws-genai-llm-chatbot)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## 5. יצירת יישום ושיוך ל-User Group
 
-[![Deploy with GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://aws-samples.github.io/aws-genai-llm-chatbot/guide/deploy.html#deploy-with-github-codespaces)
+לאחר שה-Workspace פועל:
 
-[![Full Documentation](https://img.shields.io/badge/Full%20Documentation-blue?style=for-the-badge&logo=Vite&logoColor=white)](https://aws-samples.github.io/aws-genai-llm-chatbot/)
+1. יש להיכנס בתפריט הצדדי תחת "אדמין" ל"יישומים"
+2. יש ליצור Application ולשייך אותו ל-User Group
+3. ממולץ לשנות את ערך הטמפרטורה ל0.2.
+4. לאחר יצירת היישום, יש ללחוץ על שמו (הוא יהפוך לכחול), ואז להיכנס דרך הקישור הבא:
+   ```
+   https://XXXXXXX.cloudfront.net/application/YYYYYYY
+   ```
+   - XXXXX = CloudFront Distribution
+   - YYYYY = Application ID
 
-![sample](docs/about/assets/chabot-sample.gif "GenAI Chatbot on AWS")
+   יש לשמור את Application ID לשימוש בסעיף הבא
 
-## 🚀 NEW! Support for new Amazon Nova Models 🚀
+5. לאחר מכן, המשתמשים שהגדרתם ביישום יוכלו להתחבר לאפליקציה דרך הלינק
+https://XXXXXXX.cloudfront.net/chat/application/YYYYYYY
 
-### Deploy this chatbot to use the recently announced [Amazon Nova models](https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/)!
+## 6. בדיקות איכות (Sanity Check)
 
-### These powerful models can **understand** and **generate** images and videos.
+- תשאול המודל ללא Workspace
+- הפעלת Workspace ובדיקת תוצאות
+- השוואת ביצועים בין Chunk Size 250/300, Chunk Overlap, etc.
+- בדיקת איכות המודלים Cohere לעומת Titan
 
-Deploy this chatbot to experiment with:
+# בראנצ'ים:
+### rag-input-10-files:
+- הוספה של עוד גרסאת צ'אנקינג.
+- הוספה של 10 קבצים לקונטקסט המודל במקום 3.
 
-- `Amazon Nova Micro`
-- `Amazon Nova Lite`
-- `Amazon Nova Pro`
-- `Amazon Nova Canvas`
-- `Amazon Nova Reels`
+# קונפיגורציות
+## שינוי מספר התצאות שהמודל מקבל
+```bash
+lib/shared/layers/python-sdk/python/genai_core/langchain/workspace_retriever.py
 
-Make sure to request access to the new models [here](https://aws-samples.github.io/aws-genai-llm-chatbot/documentation/model-requirements.html#amazon-bedrock-requirements)
+    def _get_relevant_documents(
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+    ) -> List[Document]:
+        logger.debug("SearchRequest", query=query)
+        result = genai_core.semantic_search.semantic_search(
+            self.workspace_id, query, limit=10, full_response=False
+        )
+```
+- שינוי המספר בלימיט ישנה את כמות הקבצים שיבואו למודל קקונטקסט לשאלה.
+# מודלי אמבדינג וריראנקינג:
+### הדרך הכי זולה שמצאתי היא לעבור לאחד מהאיזורים הבאים ולהגדיר ריראנקינג דרך בדרוק (סייג' מייקר מאוד יקר ולא בהכרח מביא תוצאות יותר טובות, היתרון היחיד והברור הוא נימבוס).
+```bash
+us-west-2
+ap-northeast-1
+ca-central-1
+eu-central-1
+```
+להפעלה נימבוסית, יש להפעיל מודלי סייג'מייקר
+```bash
+"deployDefaultSagemakerModels": false
+```
+# פתרון תקלות
 
-Read more about the new models [here](https://www.aboutamazon.com/news/aws/amazon-nova-artificial-intelligence-bedrock-aws)
+## תקלות בפריסת המערכת (Deployment-Specific Problems)
+
+#### 1. AWS לא מזהה את המשתמש
+
+שגיאת הרשאות בעת הפריסה או ההתחברות ל-ECR:
+```bash
+docker logout <your-region>.amazonaws.com
+aws configure
+aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
+```
+
+#### 2. שגיאות במחיקת קבצים (permissions error)
+
+במקרה של שגיאת הרשאות עם node_modules:
+
+1. לכבות את OneDrive
+2. למחוק את תיקיות node_modules:
+   ```bash
+   rm -rf node_modules
+   rm -rf lib/user-interface/react-app/node_modules
+   ```
+3. להריץ מחדש את ההתקנה:
+   ```bash
+   npm ci && npm run build
+   ```
+
+#### 3. cdk deploy נכשל או לוקח זמן רב
+
+התקנה של 20+ דקות היא תקינה, אך אם יש שגיאה כגון could not connect to ECR:
+```bash
+docker logout <your-region>.amazonaws.com
+aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <your-ecr-url>
+```
+
+#### 4. Error response from daemon: login attempt failed with status 400 Bad Request
+
+- יש להתחיל טרמינל חדש ולהריץ את הפקודה שוב.
+- אם לא עובד, להמתין מספר דקות ולנסות שוב.
+
+## תקלות באפליקציה (Application-Specific Problems)
+
+#### 1. בעיות עם Bedrock – קרתה תקלה ללא הסבר
+
+- המערכת לא תציג שגיאה ברורה במקרה של חוסר הרשאה למודלים.
+- יש לבדוק אם קיימת הרשאה לשימוש ב-Cohere וב-Titan ב-Bedrock.
+- כדי למצוא את מקור התקלה, יש לבדוק את CloudWatch Log Group עם השם GraphQL.
+
+#### 2. שגיאה ביצירת Workspace או שימוש במודלים
+
+- אם קיימת שגיאה בהפעלת ה-Workspace או המודלים, ודא שקיבלת הרשאות מתאימות למודלים ב-Bedrock.
+- מומלץ לבדוק את ה-Logs ב-CloudWatch תחת ה-Log Group של GraphQL.
+
+
+#### 3. המסמכים שהועלו תקועים במצב Processing
+
+- אם לוקח יותר מ10-15 דקות לעבד את הקבצים (לא רק את חלקם, הכוונה היא שאף קובץ לא מעובד), ממליץ להסתכל בקבוצת הלוגים
+```bash
+FileImportStateMachine
+```
+
+## סיכום
+
+- המדריך מפרט את תהליך ההתקנה שלב אחר שלב
+- פתרון תקלות מפורט למקרים נפוצים
+- מומלץ לעבוד בצורה מסודרת לפי השלבים כדי להימנע מבעיות
 
 ---
 
-This solution provides ready-to-use code so you can start **experimenting with a variety of Large Language Models and Multimodal Language Models, settings and prompts** in your own AWS account.
-
-Supported model providers:
-
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/) which supports a wide range of models from AWS, Anthropic, Cohere and Mistral including the latest models from Amazon Nova. See [Recent announcements](https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/) for more details.
-- [Amazon SageMaker](https://aws.amazon.com/sagemaker/) self-hosted models from Foundation, Jumpstart and HuggingFace.
-- Third-party providers via API such as Anthropic, Cohere, AI21 Labs, OpenAI, etc. [See available langchain integrations](https://python.langchain.com/docs/integrations/llms/) for a comprehensive list.
-
-# Additional Resources
-
-| Resource                                                                                          | Description                                                                                                                                                                                                                                   |
-| :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Secure Messenger GenAI Chatbot](https://github.com/aws-samples/secure-messenger-genai-chatbot)   | A messenger built on Wickr that can interface with this chatbot to provide Q&A service in tightly regulated environments (i.e. HIPAA).                                                                                                        |
-| [Project Lakechain](https://github.com/awslabs/project-lakechain)                                 | A powerful cloud-native, AI-powered, document (docs, images, audios, videos) processing framework built on top of the AWS CDK.                                                                                                                |
-| [AWS Generative AI CDK Constructs](https://github.com/awslabs/generative-ai-cdk-constructs/)      | Open-source library extension of the [AWS Cloud Development Kit (AWS CDK)](https://docs.aws.amazon.com/cdk/v2/guide/home.html) aimed to help developers build generative AI solutions using pattern-based definitions for their architecture. |
-| [Artifacts and Tools for Bedrock](https://github.com/aws-samples/artifacts-and-tools-for-bedrock) | An innovative chat-based user interface with support for tools and artifacts. It can create graphs and diagrams, analyze data, write games, create web pages, generate files, and much more.                                                  |
-
-# Roadmap
-
-Roadmap is available through the [GitHub Project](https://github.com/orgs/aws-samples/projects/69)
-
-# Authors
-
-- [Bigad Soleiman](https://www.linkedin.com/in/bigadsoleiman/)
-- [Sergey Pugachev](https://www.linkedin.com/in/spugachev/)
-
-# Contributors
-
-[![contributors](https://contrib.rocks/image?repo=aws-samples/aws-genai-llm-chatbot&max=2000)](https://github.com/aws-samples/aws-genai-llm-chatbot/graphs/contributors)
-
-# License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
-
-- [Changelog](CHANGELOG.md) of the project.
-- [License](LICENSE) of the project.
-- [Code of Conduct](CODE_OF_CONDUCT.md) of the project.
-- [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-Although this repository is released under the MIT-0 license, its front-end and SQL implementation use the following third party projects:
-
-- [psycopg2-binary](https://github.com/psycopg/psycopg2)
-- [jackspeak](https://github.com/isaacs/jackspeak)
-- [package-json-from-dist](https://github.com/isaacs/package-json-from-dist)
-- [path-scurry](https://github.com/isaacs/path-scurry)
-
-These projects' licensing includes the LGPL v3 and BlueOak-1.0.0 licenses.
-
-# Legal Disclaimer
-
-You should consider doing your own independent assessment before using the content in this sample for production purposes. This may include (amongst other things) testing, securing, and optimizing the content provided in this sample, based on your specific quality control practices and standards.
+### 
+</div>

@@ -50,11 +50,13 @@ def create_workspace_table(workspace: dict):
 
         if hybrid_search:
             for language in languages:
+                # Map 'hebrew' to 'simple' as PostgreSQL doesn't have a built-in 'hebrew' config
+                db_language = 'simple' if language == 'hebrew' else language
                 cursor.execute(
                     sql.SQL(
                         "CREATE INDEX ON {table} USING "
-                        + " GIN (to_tsvector('{language}', content));"
-                    ).format(table=table_name, language=sql.Identifier(language))
+                        + " GIN (to_tsvector('{db_language}', content));"
+                    ).format(table=table_name, db_language=sql.Identifier(db_language))
                 )
 
         if has_index:

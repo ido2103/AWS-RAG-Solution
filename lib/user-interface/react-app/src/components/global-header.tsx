@@ -53,7 +53,7 @@ export default function GlobalHeader() {
     >
       <TopNavigation
         identity={{
-          title: "צ׳אטבוט הר-גל",
+          title: "צ׳אטבוט נס-קלאוד",
           href: "/",
         }}
         utilities={[
