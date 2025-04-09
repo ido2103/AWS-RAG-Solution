@@ -18,8 +18,10 @@ def rank_passages(
 
     if model.provider == "sagemaker":
         return _rank_passages_sagemaker(model, input, passages)
+    elif model.provider == "bedrock":
+        return _rank_passages_bedrock(model, input, passages)
 
-    raise genai_core.typesCommonError("Unknown provider")
+    raise genai_core.types.CommonError("Unknown provider")
 
 
 def get_cross_encoder_models():
@@ -66,3 +68,56 @@ def _rank_passages_sagemaker(
     ret_value = json.loads(response["Body"].read().decode())
 
     return ret_value
+
+
+def _rank_passages_bedrock(
+    model: genai_core.types.CrossEncoderModel, input: str, passages: List[str]
+):
+    client = genai_core.clients.get_bedrock_client()
+
+    if not client:
+        raise genai_core.types.CommonError("Bedrock is not enabled.")
+
+    # Extract the model provider from the model name
+    model_provider = model.name.split(".")[0]
+    
+    if model_provider == "cohere":
+        # Cohere rerank-v3-5 format
+        body_data = {
+            "query": input,
+            "documents": passages,
+            "top_n": len(passages),
+            "api_version": 2  # Required by Cohere's rerank model
+        }
+    elif model_provider == "amazon":
+        # Amazon rerank-v1 format
+        body_data = {
+            "query": input,
+            "documents": passages,
+            "top_n": len(passages)
+            # No api_version needed for Amazon's model
+        }
+    else:
+        raise genai_core.types.CommonError(f'Unknown reranking provider "{model_provider}"')
+
+    body = json.dumps(body_data)
+    
+    response = client.invoke_model(
+        modelId=model.name,
+        body=body,
+        contentType="application/json",
+        accept="*/*"  # Using wildcard accept as shown in the examples
+    )
+
+    response_body = json.loads(response.get('body').read())
+    
+    if model_provider == "cohere":
+        # Cohere returns a list of results with index and relevance_score
+        # Example: {"results": [{"index": 0, "relevance_score": 0.9}, ...]}
+        return [result.get("relevance_score", 0.0) for result in response_body.get("results", [])]
+    elif model_provider == "amazon":
+        # Amazon returns a list of scores in the same order as input documents
+        # Example: {"scores": [0.9, 0.3, ...]}
+        return response_body.get("scores", [0.0] * len(passages))
+    else:
+        raise genai_core.types.CommonError(f'Unknown reranking provider "{model_provider}"')

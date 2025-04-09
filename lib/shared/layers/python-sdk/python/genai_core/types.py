@@ -97,3 +97,8 @@ class Task(Enum):
 
 class FileStorageProvider(Enum):
     S3 = "s3"
+
+
+class ChunkingStrategy(Enum):
+    RECURSIVE = "recursive"
+    FILE_LEVEL = "file_level"

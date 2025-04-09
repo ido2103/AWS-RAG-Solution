@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { StorageHelper } from "../common/helpers/storage-helper";
 import { Auth } from "aws-amplify";
 import useOnFollow from "../common/hooks/use-on-follow";
-import { CHATBOT_NAME } from "../common/constants";
 
 export default function GlobalHeader() {
   const onFollow = useOnFollow();
@@ -54,22 +53,14 @@ export default function GlobalHeader() {
     >
       <TopNavigation
         identity={{
-          title: "צ׳אטבוט עברי",
+          title: "צ׳אטבוט הר-גל",
           href: "/",
-          logo: { src: "/images/logo.png", alt: { CHATBOT_NAME } + " Logo" },
         }}
         utilities={[
           {
             type: "button",
             text: theme === Mode.Dark ? "מצב חשוך" : "מצב בהיר",
             onClick: onChangeThemeClick,
-          },
-          {
-            type: "button",
-            text: "GitHub",
-            href: "https://github.com/aws-samples/aws-genai-llm-chatbot",
-            external: true,
-            externalIconAriaLabel: " (opens in a new tab)",
           },
           {
             type: "menu-dropdown",

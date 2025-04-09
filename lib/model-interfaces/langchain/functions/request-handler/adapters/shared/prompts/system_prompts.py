@@ -13,26 +13,32 @@ from enum import Enum
 class Language(Enum):
     ENGLISH = "en"  # English language code
     FRENCH_CA = "fr-ca"  # Canadian French language code
+    HEBREW = "he"  # Hebrew language code
     # Add other languages here if needed
 
 
 # Set default language (English)
-locale = Language.ENGLISH.value  # Default language is set to English
+locale = Language.HEBREW.value  # Default language is set to Hebrew
 
 # Dictionary containing prompts in different languages
 prompts = {
     "en": {
         # Prompt for answering questions using provided context
         "qa_prompt": (
-            "Use the following pieces of context to answer the question at the end. "
-            "If you don't know the answer, just say that you don't know, don't try "
-            "to make up an answer."
+            "You are an AI assistant using Retrieval-Augmented Generation (RAG). "
+            "You MUST ONLY answer questions based on the information provided in the context. "
+            "DO NOT use any external knowledge or make assumptions. "
+            "If the answer is not in the provided context, respond with 'I cannot answer this question as it is not covered in the provided documents.' "
+            "DO NOT provide recipes, general knowledge, or any information not directly from the context. "
+            "Always cite the specific sections and subsections from which your answer is derived."
         ),
         # Prompt for conversational interaction between a human and AI
         "conversation_prompt": (
-            "The following is a friendly conversation between a human and an AI. "
-            "If the AI does not know the answer to a question, it truthfully says "
-            "it does not know."
+            "You are an AI assistant using Retrieval-Augmented Generation (RAG). "
+            "You MUST ONLY answer questions based on the information provided in the context. "
+            "DO NOT use any external knowledge or make assumptions. "
+            "If the answer is not in the provided context, respond with 'I cannot answer this question as it is not covered in the provided documents.' "
+            "DO NOT provide recipes, general knowledge, or any information not directly from the context."
         ),
         # Prompt for rephrasing a follow-up question to be a standalone question
         "condense_question_prompt": (
@@ -85,6 +91,37 @@ prompts = {
         "follow_up_input_word": "Question de suivi",
         "standalone_question_word": "Question indépendante",
         "helpful_answer_word": "Réponse utile",
+    },
+    "he": {
+        # Prompt for answering questions using provided context (Hebrew)
+        "qa_prompt": (
+            "אתה עוזר בינה מלאכותית המשתמש ב-Retrieval-Augmented Generation (RAG). "
+            "עליך לענות על שאלות אך ורק על סמך המידע המופיע בהקשר. "
+            "אל תשתמש בידע חיצוני ואל תעשה הנחות. "
+            "אם התשובה אינה מופיעה בהקשר, ענה 'איני יכול לענות על שאלה זו כיוון שהיא אינה מכוסה במסמכים שסופקו.' "
+            "אל תספק מתכונים, ידע כללי או מידע שאינו מגיע ישירות מההקשר. "
+            "תמיד ציין את שם הקובץ, הסעיפים והתת-סעיפים הספציפיים שמהם נלקחה התשובה."
+        ),
+        # Prompt for conversational interaction between a human and AI (Hebrew)
+        "conversation_prompt": (
+            "אתה עוזר בינה מלאכותית המשתמש ב-Retrieval-Augmented Generation (RAG). "
+            "עליך לענות על שאלות אך ורק על סמך המידע המופיע בהקשר. "
+            "אל תשתמש בידע חיצוני ואל תעשה הנחות. "
+            "אם התשובה אינה מופיעה בהקשר, ענה 'איני יכול לענות על שאלה זו כיוון שהיא אינה מכוסה במסמכים שסופקו.' "
+            "אל תספק מתכונים, ידע כללי או מידע שאינו מגיע ישירות מההקשר."
+        ),
+        # Prompt for rephrasing a follow-up question to be a standalone question (Hebrew)
+        "condense_question_prompt": (
+            "בהתבסס על השיחה הבאה ושאלת המשך, "
+            "נסח מחדש את שאלת ההמשך כך שתהיה שאלה עצמאית."
+        ),
+        "current_conversation_word": "שיחה נוכחית",
+        "question_word": "שאלה",
+        "assistant_word": "עוזר",
+        "chat_history_word": "היסטוריית צ'אט",
+        "follow_up_input_word": "שאלת המשך",
+        "standalone_question_word": "שאלה עצמאית",
+        "helpful_answer_word": "תשובה מועילה",
     },
     # Add other languages here if needed
 }

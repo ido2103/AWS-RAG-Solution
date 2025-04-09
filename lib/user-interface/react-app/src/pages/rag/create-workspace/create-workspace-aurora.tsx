@@ -35,6 +35,7 @@ const defaults: AuroraWorkspaceCreateInput = {
   metric: metrics[0].value,
   index: true,
   hybridSearch: false,
+  chunkingStrategy: "recursive",
   chunkSize: 1000,
   chunkOverlap: 200,
 };
@@ -93,16 +94,18 @@ export default function CreateWorkspaceAurora() {
         errors.languages = "You can select up to 3 languages";
       }
 
-      if (form.chunkSize < 100) {
-        errors.chunkSize = "Chunk size must be at least 100 characters";
-      } else if (form.chunkSize > 10000) {
-        errors.chunkSize = "Chunk size must be less than 10000 characters";
-      }
+      if (form.chunkingStrategy === "recursive") {
+        if (form.chunkSize < 100) {
+          errors.chunkSize = "Chunk size must be at least 100 characters";
+        } else if (form.chunkSize > 10000) {
+          errors.chunkSize = "Chunk size must be less than 10000 characters";
+        }
 
-      if (form.chunkOverlap < 0) {
-        errors.chunkOverlap = "Chunk overlap must be zero or greater";
-      } else if (form.chunkOverlap >= form.chunkSize) {
-        errors.chunkOverlap = "Chunk overlap must be less than chunk size";
+        if (form.chunkOverlap < 0) {
+          errors.chunkOverlap = "Chunk overlap must be zero or greater";
+        } else if (form.chunkOverlap >= form.chunkSize) {
+          errors.chunkOverlap = "Chunk overlap must be less than chunk size";
+        }
       }
 
       if (form.index && form.embeddingsModel) {
@@ -153,7 +156,7 @@ export default function CreateWorkspaceAurora() {
         metric: data.metric,
         index: data.index,
         hybridSearch: data.hybridSearch && crossEncoderSelected,
-        chunkingStrategy: "recursive",
+        chunkingStrategy: data.chunkingStrategy,
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap,
       });

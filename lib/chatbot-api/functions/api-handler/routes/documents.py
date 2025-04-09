@@ -7,6 +7,7 @@ from common.constant import (
     SAFE_STR_REGEX,
     MAX_STR_INPUT_LENGTH,
     SAFE_SHORT_STR_VALIDATION,
+    SAFE_FILE_NAME_REGEX,
     UserRole,
 )
 import genai_core.types
@@ -31,7 +32,7 @@ CONTENT_TYPE_VALDIATION = Field(
 
 class FileUploadRequest(BaseModel):
     workspaceId: Optional[str] = ID_FIELD_VALIDATION_OPTIONAL
-    fileName: str = Field(min_length=1, max_length=500, pattern=SAFE_STR_REGEX)
+    fileName: str = Field(min_length=1, max_length=500, pattern=SAFE_FILE_NAME_REGEX)
 
 
 class TextDocumentRequest(BaseModel):
@@ -131,6 +132,7 @@ allowed_workspace_extensions = set(
         ".xlsx",
         ".eml",
         ".html",
+        ".htm",
         ".json",
         ".md",
         ".msg",
@@ -153,6 +155,7 @@ allowed_session_extensions = set(
         ".xls",
         ".xlsx",
         ".html",
+        ".htm",
         ".txt",
         ".md",
         ".mp4",

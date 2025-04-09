@@ -764,7 +764,7 @@ export default function ChatInputPanel(props: ChatInputPanelProps) {
               sessionId={props.session.id}
               modality={ChabotInputModality.Document}
               header="Add documents to your message"
-              hint=".pdf, .csv, .doc, .docx, .xls, .xlsx, .html,. txt, .md. Max 4.5MB."
+              hint=".pdf, .csv, .doc, .docx, .xls, .xlsx, .html, .htm, .txt, .md. Max 4.5MB."
               allowedTypes={[
                 "application/pdf",
                 "text/csv",

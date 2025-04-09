@@ -19,7 +19,7 @@ router = Router()
 logger = Logger()
 permissions = UserPermissions(router)
 
-name_regex = r"^[\w+_-]+$"
+name_regex = r"^[\\u0590-\\u05FF\\uFB1D-\\uFB4F\\uFB50-\\uFDFF\\uFE70-\\uFEFFA-Za-z0-9-_./\\\\ ]*$"
 
 
 class GenericCreateWorkspaceRequest(BaseModel):
@@ -204,14 +204,15 @@ def _create_workspace_aurora(request: CreateWorkspaceAuroraRequest, config: dict
     if request.metric not in ["inner", "cosine", "l2"]:
         raise genai_core.types.CommonError("Invalid metric")
 
-    if request.chunkingStrategy not in ["recursive"]:
+    if request.chunkingStrategy not in [genai_core.types.ChunkingStrategy.RECURSIVE.value]:
         raise genai_core.types.CommonError("Invalid chunking strategy")
 
-    if request.chunkSize < 100 or request.chunkSize > 10000:
-        raise genai_core.types.CommonError("Invalid chunk size")
+    if request.chunkingStrategy == genai_core.types.ChunkingStrategy.RECURSIVE.value:
+        if request.chunkSize < 100 or request.chunkSize > 10000:
+            raise genai_core.types.CommonError("Invalid chunk size")
 
-    if request.chunkOverlap < 0 or request.chunkOverlap >= request.chunkSize:
-        raise genai_core.types.CommonError("Invalid chunk overlap")
+        if request.chunkOverlap < 0 or request.chunkOverlap >= request.chunkSize:
+            raise genai_core.types.CommonError("Invalid chunk overlap")
 
     return _convert_workspace(
         genai_core.workspaces.create_workspace_aurora(
@@ -263,19 +264,23 @@ def _create_workspace_open_search(
     if request.crossEncoderModelName is not None and cross_encoder_model is None:
         raise genai_core.types.CommonError("Cross encoder model not found")
 
+    if request.chunkingStrategy not in [
+        genai_core.types.ChunkingStrategy.RECURSIVE.value,
+        genai_core.types.ChunkingStrategy.FILE_LEVEL.value,
+    ]:
+        raise genai_core.types.CommonError("Invalid chunking strategy")
+
+    if request.chunkingStrategy == genai_core.types.ChunkingStrategy.RECURSIVE.value:
+        if request.chunkSize < 100 or request.chunkSize > 10000:
+            raise genai_core.types.CommonError("Invalid chunk size")
+
+        if request.chunkOverlap < 0 or request.chunkOverlap >= request.chunkSize:
+            raise genai_core.types.CommonError("Invalid chunk overlap")
+
     embeddings_model_dimensions = embeddings_model["dimensions"]
 
     if len(request.languages) == 0 or len(request.languages) > 3:
         raise genai_core.types.CommonError("Invalid languages")
-
-    if request.chunkingStrategy not in ["recursive"]:
-        raise genai_core.types.CommonError("Invalid chunking strategy")
-
-    if request.chunkSize < 100 or request.chunkSize > 10000:
-        raise genai_core.types.CommonError("Invalid chunk size")
-
-    if request.chunkOverlap < 0 or request.chunkOverlap >= request.chunkSize:
-        raise genai_core.types.CommonError("Invalid chunk overlap")
 
     return _convert_workspace(
         genai_core.workspaces.create_workspace_open_search(

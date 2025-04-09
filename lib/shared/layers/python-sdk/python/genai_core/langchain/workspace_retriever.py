@@ -19,7 +19,7 @@ class WorkspaceRetriever(BaseRetriever):
     ) -> List[Document]:
         logger.debug("SearchRequest", query=query)
         result = genai_core.semantic_search.semantic_search(
-            self.workspace_id, query, limit=3, full_response=False
+            self.workspace_id, query, limit=10, full_response=True
         )
 
         self.documents_found = [
@@ -34,6 +34,12 @@ class WorkspaceRetriever(BaseRetriever):
         page_content = content
         if content_complement:
             page_content = content_complement
+
+        # Get filename from path
+        filename = item["path"].split("/")[-1] if item["path"] else item["title"]
+
+        # Prepend filename to page_content
+        page_content = f"File: {filename}\n\n{page_content}"
 
         metadata = {
             "chunk_id": item["chunk_id"],

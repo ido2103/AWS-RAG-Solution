@@ -62,7 +62,7 @@ export class WorkspacesClient {
     metric: string;
     index: boolean;
     hybridSearch: boolean;
-    chunkingStrategy: string;
+    chunkingStrategy: "recursive" | "file_level";
     chunkSize: number;
     chunkOverlap: number;
   }): Promise<GraphQLResult<GraphQLQuery<CreateAuroraWorkspaceMutation>>> {
@@ -83,7 +83,7 @@ export class WorkspacesClient {
     crossEncoderModelName?: string;
     languages: string[];
     hybridSearch: boolean;
-    chunkingStrategy: string;
+    chunkingStrategy: "recursive" | "file_level";
     chunkSize: number;
     chunkOverlap: number;
   }): Promise<GraphQLResult<GraphQLQuery<CreateOpenSearchWorkspaceMutation>>> {

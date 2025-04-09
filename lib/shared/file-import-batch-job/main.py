@@ -17,6 +17,11 @@ PROCESSING_OBJECT_KEY = os.environ.get("PROCESSING_OBJECT_KEY")
 s3_client = boto3.client("s3")
 
 
+def get_file_size(bucket: str, key: str) -> int:
+    response = s3_client.head_object(Bucket=bucket, Key=key)
+    return response['ContentLength']
+
+
 def main():
     print("Starting file converter batch job")
     print("Workspace ID: {}".format(WORKSPACE_ID))
@@ -38,6 +43,8 @@ def main():
 
     try:
         extension = os.path.splitext(INPUT_OBJECT_KEY)[-1].lower()
+        file_size = get_file_size(INPUT_BUCKET_NAME, INPUT_OBJECT_KEY)
+        
         if extension == ".txt":
             object = s3_client.get_object(
                 Bucket=INPUT_BUCKET_NAME, Key=INPUT_OBJECT_KEY
@@ -57,15 +64,15 @@ def main():
                 Bucket=PROCESSING_BUCKET_NAME, Key=PROCESSING_OBJECT_KEY, Body=content
             )
 
-        add_chunks(workspace, document, content)
+        add_chunks(workspace, document, content, file_size)
     except Exception as error:
         genai_core.documents.set_status(WORKSPACE_ID, DOCUMENT_ID, "error")
         print(error)
         raise error
 
 
-def add_chunks(workspace: dict, document: dict, content: str):
-    chunks = genai_core.chunks.split_content(workspace, content)
+def add_chunks(workspace: dict, document: dict, content: str, file_size: int):
+    chunks = genai_core.chunks.split_content(workspace, content, file_size)
 
     genai_core.chunks.add_chunks(
         workspace=workspace,
