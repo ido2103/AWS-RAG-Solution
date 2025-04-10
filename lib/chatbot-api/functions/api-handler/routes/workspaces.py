@@ -204,7 +204,10 @@ def _create_workspace_aurora(request: CreateWorkspaceAuroraRequest, config: dict
     if request.metric not in ["inner", "cosine", "l2"]:
         raise genai_core.types.CommonError("Invalid metric")
 
-    if request.chunkingStrategy not in [genai_core.types.ChunkingStrategy.RECURSIVE.value]:
+    if request.chunkingStrategy not in [
+        genai_core.types.ChunkingStrategy.RECURSIVE.value,
+        genai_core.types.ChunkingStrategy.FILE_LEVEL.value,
+    ]:
         raise genai_core.types.CommonError("Invalid chunking strategy")
 
     if request.chunkingStrategy == genai_core.types.ChunkingStrategy.RECURSIVE.value:

@@ -34,7 +34,7 @@ export function ChunkSelectorField(props: ChunkSelectorProps) {
                 description: "Split text into smaller chunks with overlap. Better for precise retrieval.",
               },
               {
-                label: "File Level (OpenSearch only)",
+                label: "File Level",
                 value: "file_level",
                 description: "Treat each file as a single chunk. Files over 100KB will automatically use recursive splitting.",
               },

@@ -75,18 +75,9 @@ npm run configure
 cp dist/bin/config.json bin/config.json
 ```
 לאחר שהקונפיגורציה מוכנה, יש לסיים את התקנת המערכת:
+### שלב חובה לפני הפריסה, אין צורך לעשות אותו כל פעם - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
 ```bash
-npm run cdk bootstrap  # שלב חובה לפני הפריסה, אין צורך לעשות אותו כל פעם - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
-```
-ללכת לתיקייה
-```bash
-lib/user-interface/react-app/src
-```
-ליצור קובץ בשם
-```bash
-vite-env.d.ts
-קוד:
-/// <reference types="vite/client" />
+npm run cdk bootstrap  
 ```
 
 ## תחילת התקנת הסביבה
