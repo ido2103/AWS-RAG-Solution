@@ -1,0 +1,88 @@
+{
+  "prefix": "RAG-",
+  "createCMKs": true,
+  "retainOnDelete": false,
+  "ddbDeletionProtection": false,
+  "bedrock": {
+    "enabled": true,
+    "region": "eu-central-1",
+    "guardrails": {
+      "enabled": false,
+      "identifier": "",
+      "version": "DRAFT"
+    }
+  },
+  "llms": {
+    "enableSagemakerModels": false,
+    "sagemaker": [],
+    "huggingfaceApiSecretArn": ""
+  },
+  "rag": {
+    "enabled": true,
+    "deployDefaultSagemakerModels": false,
+    "engines": {
+      "aurora": {
+        "enabled": true
+      },
+      "opensearch": {
+        "enabled": false
+      },
+      "kendra": {
+        "enabled": false,
+        "createIndex": false,
+        "external": [],
+        "enterprise": false
+      },
+      "knowledgeBase": {
+        "enabled": false,
+        "external": [
+        ]
+      }
+    },
+    "embeddingsModels": [
+      {
+        "provider": "bedrock",
+        "name": "amazon.titan-embed-text-v2:0",
+        "dimensions": 1024,
+        "default": false
+      },
+      {
+        "provider": "bedrock",
+        "name": "amazon.titan-embed-image-v1",
+        "dimensions": 1024,
+        "default": false
+      },
+      {
+        "provider": "bedrock",
+        "name": "cohere.embed-english-v3",
+        "dimensions": 1024,
+        "default": false
+      },
+      {
+        "provider": "bedrock",
+        "name": "cohere.embed-multilingual-v3",
+        "dimensions": 1024,
+        "default": true
+      },
+      {
+        "provider": "openai",
+        "name": "text-embedding-ada-002",
+        "dimensions": 1536,
+        "default": false
+      }
+    ],
+    "crossEncoderModels": [
+      {
+        "provider": "bedrock",
+        "name": "cohere.rerank-v3-5:0",
+        "default": true
+      },
+      {
+        "provider": "bedrock",
+        "name": "amazon.rerank-v1:0",
+        "default": false
+      }
+    ]
+  
+  }
+}
