@@ -3,6 +3,7 @@
 ## תוכן עניינים
 
 - [מערכת RAG על AWS](#מערכת-rag-על-aws)
+  - [דרישות מקדימות (Prerequisites)](#דרישות-מקדימות-prerequisites)
   - [1. הכנת הסביבה](#1-הכנת-הסביבה)
     - [התחברות ל-AWS](#התחברות-ל-aws)
     - [הכנת הסביבה](#הכנת-הסביבה-1)
@@ -30,6 +31,36 @@
 # מערכת RAG על AWS  
 **גרסה מותאמת אישית עם דגשים מבוססי ניסיון בשטח ופתרון תקלות מפורט.**
 
+## דרישות מקדימות (Prerequisites)
+
+לפני תחילת ההתקנה, יש לוודא שהכלים הבאים מותקנים ופועלים כראוי:
+
+```bash
+# בדיקת גרסת AWS CLI
+aws --version
+
+# בדיקת גרסת Node.js, דרוש 20
+node -v
+
+# בדיקת גרסת npm
+npm -v
+
+# בדיקת גרסת Python
+python --version
+
+# בדיקת גרסת Git
+git --version
+
+#בדיקת גרסת aws cdk
+aws cdk
+```
+
+
+
+- יש להוריד ולהתקין את [Docker Desktop](https://www.docker.com/products/docker-desktop/) 
+- מומלץ לפני תחילת העבודה ליצור משתמש חדש ב-AWS Console עם הרשאות מתאימות לעבודה עם הפרויקט
+
+
 ## 1. הכנת הסביבה  
 
 לפני תחילת ההתקנה, יש לוודא שהמערכת מוכנה לפעולה:
@@ -37,6 +68,35 @@
 ### התחברות ל-AWS
 ```bash
 aws configure
+```
+
+**הערה חשובה**: אם מתקבלת שגיאה כגון:
+```
+An error occurred (UnrecognizedClientException) when calling the GetAuthorizationToken operation: The security token included in the request is invalid.
+Error: Cannot perform an interactive login from a non TTY device
+```
+הסיבה עשויה להיות שאתם משתמשים ב-credentials זמניים. במקרה כזה, יש ליצור משתמש IAM חדש ב-AWS Console ולהשתמש ב-Access Key ו-Secret Access Key שלו לצורך הקונפיגורציה.
+אם התקלה עדיין קוראת למרות שאתם משתמשים במפתחות *לא* זמניים, והשגיאה היא אותה שגיאה שמצויינת לעיל, יש לעקוב אחר ההוראות הבאות:
+
+- 1.  מציאת קובץ ההגדרות של aws cli
+```bash
+# Windows
+C:\Users\<YourUsername>\.aws\credentials
+
+OR
+
+%USERPROFILE%\.aws\credentials
+
+# Linux
+/home/<your-username>/.aws/credentials
+
+OR
+
+~/.aws/credentials
+```
+- 2. יש למחוק את השורה הבאה ואת הערך שלה:
+```bash
+aws_session_token
 ```
 
 
@@ -63,19 +123,209 @@ npm ci && npm run build
 
 ### קובץ קונפיגורציה (config.json)
 - הקונפיגורציה מחליטה איזה רכיבים יפרסו, באיזה איזור. 
-- הקונפיגורציה ברירת המחדל פורסת את הפיתרון עם בדרוק באירלנד עם השם RAG.
+
+## הגדרות בסיסיות ב-config.json
+
+```json
+{
+  "prefix": "MyProject -",
+  "enableS3TransferAcceleration": false,
+  "enableWaf": false,
+  "directSend": true,
+  "provisionedConcurrency": 0,
+  "cloudfrontLogBucketArn": "",
+  "createCMKs": true,
+  "retainOnDelete": false
+}
+```
+
+- **prefix**: קידומת לשמות המשאבים. לדוגמה: "MyProject-" ייצור משאבים בשם MyProject-GenAIChatBot
+- **enableWaf**: הפעלת Web Application Firewall להגנה על האפליקציה (מוסיף עלות)
+- **createCMKs**: יצירת Customer Managed Keys לאבטחה מוגברת (מוסיף עלות של כ-1$ לחודש למפתח)
+- **retainOnDelete**: אם true, הדאטה יישמר גם לאחר מחיקת הסטאק (מומלץ בסביבת ייצור)
+
+## הגדרת Bedrock
+
+```json
+"bedrock": {
+  "enabled": true,
+  "region": "eu-central-1",
+  "guardrails": {
+    "enabled": false,
+    "identifier": "",
+    "version": "DRAFT"
+  }
+}
+```
+
+- **region**: האזור בו הפתרון משתמש ב-Bedrock (חשוב לוודא שהמודלים הרצויים זמינים באזור זה)
+- **enabled**: הפעלת השימוש ב-Bedrock
+- דוגמה לשינוי אזור ל-us-west-2:
+  ```json
+  "bedrock": {
+    "enabled": true,
+    "region": "us-west-2"
+  }
+  ```
+
+## הגדרת מנועי RAG
+
+```json
+"rag": {
+  "enabled": true,
+  "deployDefaultSagemakerModels": false,
+  "engines": {
+    "aurora": {
+      "enabled": false
+    },
+    "opensearch": {
+      "enabled": true
+    },
+    "kendra": {
+      "enabled": false,
+      "createIndex": false,
+      "external": [],
+      "enterprise": false
+    },
+    "knowledgeBase": {
+      "enabled": true,
+      "external": []
+    }
+  }
+}
+```
+
+- **enabled**: הפעלת יכולות RAG
+- **deployDefaultSagemakerModels**: פריסת מודלי SageMaker ברירת מחדל (יקר יותר ולא חסר-שרת (Serverless))
+- דוגמה להפעלת Aurora במקום OpenSearch:
+  ```json
+  "engines": {
+    "aurora": {
+      "enabled": true
+    },
+    "opensearch": {
+      "enabled": false
+    }
+  }
+  ```
+
+## הגדרת מודלי אמבדינג
+
+```json
+"embeddingsModels": [
+  {
+    "provider": "bedrock",
+    "name": "amazon.titan-embed-text-v2:0",
+    "dimensions": 1024,
+    "default": false
+  },
+  {
+    "provider": "bedrock",
+    "name": "cohere.embed-multilingual-v3",
+    "dimensions": 1024,
+    "default": true
+  }
+]
+```
+
+- **provider**: ספק המודל (bedrock, openai, וכו')
+- **name**: שם המודל
+- **dimensions**: מספר המימדים של האמבדינג
+- **default**: האם זה מודל ברירת המחדל
+- לשינוי מודל ברירת המחדל, יש לשנות את ה-default ל-true במודל הרצוי ול-false בשאר המודלים
+
+## הגדרת מודלי רי-ראנקינג (Cross-Encoder)
+
+```json
+"crossEncoderModels": [
+  {
+    "provider": "bedrock",
+    "name": "cohere.rerank-v3-5:0",
+    "default": true
+  },
+  {
+    "provider": "bedrock",
+    "name": "amazon.rerank-v1:0",
+    "default": false
+  }
+]
+```
+
+- **provider**: ספק המודל
+- **name**: שם המודל
+- **default**: האם זה מודל ברירת המחדל
+- דוגמה להחלפת מודל ברירת המחדל ל-amazon.rerank-v1:0:
+  ```json
+  "crossEncoderModels": [
+    {
+      "provider": "bedrock",
+      "name": "cohere.rerank-v3-5:0",
+      "default": false
+    },
+    {
+      "provider": "bedrock",
+      "name": "amazon.rerank-v1:0",
+      "default": true
+    }
+  ]
+  ```
+
+## הגדרת LLMs
+
+```json
+"llms": {
+  "enableSagemakerModels": false,
+  "sagemaker": [],
+  "huggingfaceApiSecretArn": ""
+}
+```
+
+- **enableSagemakerModels**: הפעלת מודלי SageMaker (בנוסף לעלות ה-instance, יש עלות על המודל עצמו)
+- בהפעלת הפתרון עם SageMaker, רצוי להגדיר:
+  ```json
+  "llms": {
+    "enableSagemakerModels": true,
+    "sagemaker": [
+      {
+        "name": "model-name",
+        "instanceType": "ml.g5.2xlarge",
+        "instanceCount": 1
+      }
+    ]
+  }
+  ```
+
+
+
 אם אין צורך לשנות את הקונפיגורציה:
+
+**Linux:**
 ```bash
 cp bin/config.json dist/bin/config.json
+```
+
+**Windows:**
+```bash
+copy bin\config.json dist\bin\config.json
 ```
 
 אם יש צורך בשינוי קונפיגורציה:
 ```bash
 npm run configure
+```
+
+**Linux:**
+```bash
 cp dist/bin/config.json bin/config.json
 ```
+
+**Windows:**
+```bash
+copy dist\bin\config.json bin\config.json
+```
+
 לאחר שהקונפיגורציה מוכנה, יש לסיים את התקנת המערכת:
-### שלב חובה לפני הפריסה, אין צורך לעשות אותו כל פעם - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
+### שלב חובה לפני הפריסה, **אין צורך לעשות אותו כל פעם** - רק פעם אחת. ניתן לוודא אם הוא קיים ב Cloudformation בRegion בוא אתם פועלים.
 ```bash
 npm run cdk bootstrap  
 ```
@@ -112,15 +362,24 @@ RAGGenAIChatBotStack.UserInterfacePublicWebsiteUserInterfaceDomainName0AFFF237 =
 - יש ללחוץ על הלינק של הקוגניטו יוזר פול, וליצור לכם משתמש ולשייך אותו לקבוצת אדמין.
 - לאחר מכן, יש להתחבר איתו דרך הלינק לממשק.
 
+![Demo](docs/about/assets/RAG-Cognito.gif)
+
+
 ## 4. הגדרת ה-Workspace
 
-לאחר שהמערכת מותקנת, יש ליצור Workspace עם ההגדרות הבאות:
+לאחר שהמערכת מותקנת, יש ליצור Workspace עם ההגדרות המתאימות לפרויקט שבו אתם עובדים.
+להלן הגדרות כלליות. יש להתנסות ולשנות את הגורמים ע"פ סוג המידע שלכם ולבצע בדיקת Sanity.
+בשיטת OpenSearch אין שליטה על חישוב הוקטורים ממשק המשתמש (אמנם יש בקוד) אך באורורה יש יותר אפשרויות
 
 - Embedding Model: Cohere/Titan
 - Data Languages: Hebrew
 - Cross Encoder: None
-- Chunk Size: 300
+- Chunk Size: 1000
 - Chunk Overlap: 100
+
+> **הערה** בAurora אפשר לשנות את השוואת הוקטורים גם ביצירת Bedrock Knowledgebase וגם דרך הגדרה ידנית דרך הממשק.
+
+> **הערה**: שיטת השוואת וקטורים של Dot Percision חלשה יותר מול וקטורים באורכים שונים, ותהיה תמיד לטובת הוקטור הארוך יותר. יש להתחשב בשיטות הצ'אנקינג והאמבדינג בהתאם לסוג הדאטה.
 
 > **הערה**: אם יש שגיאה בהפעלת ה-Workspace, יש לוודא שקיבלת הרשאה למודלים ב-Bedrock ולבדוק את ה-logs בקבוצת graphql.
 
@@ -154,6 +413,9 @@ https://XXXXXXX.cloudfront.net/chat/application/YYYYYYY
 - הפעלת Workspace ובדיקת תוצאות
 - השוואת ביצועים בין Chunk Size 250/300, Chunk Overlap, etc.
 - בדיקת איכות המודלים Cohere לעומת Titan
+> ממולץ להשתמש בסקריפט שיצרתי על מנת להקל על הבדיקות:
+> 
+> [צפייה בסרטון הדגמה של Sanity Check](https://nessisrael.sharepoint.com/:v:/r/sites/msteams_0226ad/Shared%20Documents/General/AI%20-%20GENERAL/%D7%90%D7%A8%D7%92%D7%96%20%D7%9B%D7%9C%D7%99%D7%9D/%D7%94%D7%93%D7%92%D7%9E%D7%94%20Sanity.mp4?csf=1&web=1&e=DujU9E)
 
 # בראנצ'ים:
 ### rag-input-10-files:
@@ -186,6 +448,20 @@ eu-central-1
 ```bash
 "deployDefaultSagemakerModels": false
 ```
+# מחיקת הסטאק
+מחיקת הסטאק תתבצע ב2 דרכים שונות:
+## 1. דרך ה CLI:
+```bash
+npm run cdk destroy
+```
+## 2. דרך הקונסולה של אמזון ברשת
+```bash
+1. יש להתחבר לחשבון שבו נמצאת הסביבה
+2. יש ללכת למוצר 'CloudFormation'
+3. יש לוודא שאתם נמצאים בRegion הרלוונטי שבו הותקנה הסביבה (לא בדרוק, הסביבה עצמה)
+4. יש ללחוץ לע הסטאק הרלוונטי וללחוץ Delete
+הערה: חשוב לוודא שמוחקים את הStack ו**לא** את ה-Nested Stack.
+```
 # פתרון תקלות
 
 ## תקלות בפריסת המערכת (Deployment-Specific Problems)
@@ -205,10 +481,19 @@ aws ecr get-login-password --region <your-region> | docker login --username AWS 
 
 1. לכבות את OneDrive
 2. למחוק את תיקיות node_modules:
+   
+   **Linux:**
    ```bash
    rm -rf node_modules
    rm -rf lib/user-interface/react-app/node_modules
    ```
+   
+   **Windows:**
+   ```bash
+   rmdir /s /q node_modules
+   rmdir /s /q lib\user-interface\react-app\node_modules
+   ```
+
 3. להריץ מחדש את ההתקנה:
    ```bash
    npm ci && npm run build
