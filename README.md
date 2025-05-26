@@ -436,6 +436,14 @@ lib/shared/layers/python-sdk/python/genai_core/langchain/workspace_retriever.py
         )
 ```
 - שינוי המספר בלימיט ישנה את כמות הקבצים שיבואו למודל קקונטקסט לשאלה.
+
+## שינוי הסיסטם פרומפט
+```bash
+lib/model-interfaces/langchain/functions/request-handler/adapters/shared/prompts/system_prompts.py
+
+כדי לשנות את פרומפט הראג - יש לשנות את ה-qna prompt.
+כדי לשנות את פרומפט השיחה - יש לשנות את ה-conversation prompt
+```
 # מודלי אמבדינג וריראנקינג:
 ### הדרך הכי זולה שמצאתי היא לעבור לאחד מהאיזורים הבאים ולהגדיר ריראנקינג דרך בדרוק (סייג' מייקר מאוד יקר ולא בהכרח מביא תוצאות יותר טובות, היתרון היחיד והברור הוא נימבוס).
 ```bash

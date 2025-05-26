@@ -1,8 +1,15 @@
 {
   "prefix": "RAG-",
-  "createCMKs": true,
+  "enableS3TransferAcceleration": false,
+  "enableWaf": false,
+  "directSend": true,
+  "provisionedConcurrency": 0,
+  "cloudfrontLogBucketArn": "",
+  "createCMKs": false,
   "retainOnDelete": false,
   "ddbDeletionProtection": false,
+  "cfGeoRestrictEnable": false,
+  "cfGeoRestrictList": [],
   "bedrock": {
     "enabled": true,
     "region": "eu-central-1",
@@ -34,7 +41,7 @@
         "enterprise": false
       },
       "knowledgeBase": {
-        "enabled": false,
+        "enabled": true,
         "external": [
         ]
       }
@@ -48,27 +55,9 @@
       },
       {
         "provider": "bedrock",
-        "name": "amazon.titan-embed-image-v1",
-        "dimensions": 1024,
-        "default": false
-      },
-      {
-        "provider": "bedrock",
-        "name": "cohere.embed-english-v3",
-        "dimensions": 1024,
-        "default": false
-      },
-      {
-        "provider": "bedrock",
         "name": "cohere.embed-multilingual-v3",
         "dimensions": 1024,
         "default": true
-      },
-      {
-        "provider": "openai",
-        "name": "text-embedding-ada-002",
-        "dimensions": 1536,
-        "default": false
       }
     ],
     "crossEncoderModels": [
@@ -83,6 +72,5 @@
         "default": false
       }
     ]
-  
   }
 }
